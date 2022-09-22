@@ -1,22 +1,19 @@
 from flask import Flask, request, render_template, redirect, flash, session
-
 app = Flask(__name__)
-
 from flask_debugtoolbar import DebugToolbarExtension
 app.config['SECRET_KEY'] = 'secret'
-
-debug = DebugToolbarExtension(app)
-
 from surveys import satisfaction_survey as survey
 
 
+debug = DebugToolbarExtension(app)
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 
 
 
 
-
-responses = []
+RESPONSES_KEY = "responses"
+# responses = []
 
 @app.route('/')
 def start_page():
@@ -25,6 +22,7 @@ def start_page():
 
 @app.route("/begin", methods=["POST"])
 def start_survey():
+    session[RESPONSES_KEY] = []
     return redirect('/questions/0')
 
 
@@ -34,15 +32,16 @@ def start_survey():
 
 @app.route('/questions/<int:qnum>', methods= ['GET'])
 def questions(qnum):
-
+    responses = session.get(RESPONSES_KEY)
     question = survey.questions[qnum]
+
     
 
     # if the lenght of the responses list is the same as the length of the questions list, the survey must be complete
     if (len(responses) == len(survey.questions)):
         return redirect("/complete")
 
-    if (len(responses) != qnum and qnum>0):
+    if (len(responses) != qnum):
         flash("Invalid. Please answer questions in order.")
         return redirect(f'/questions/{len(responses)}')
 
@@ -55,7 +54,10 @@ def questions(qnum):
 @app.route('/answer', methods=['POST'])
 def answer():
     choice = request.form['answer']
+
+    responses = session[RESPONSES_KEY]
     responses.append(choice)
+    session[RESPONSES_KEY] = responses
 
     if (len(responses) == len(survey.questions)):
         return redirect("/complete")

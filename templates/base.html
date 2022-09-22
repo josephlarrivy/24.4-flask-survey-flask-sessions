@@ -15,5 +15,16 @@
 
     {% block content %}
     {% endblock %}
+<!-- 
+    {% if request.cookies %}
+        <fieldset>
+            <label>cookies received by flask</label>
+            <ul>
+                {% for name, value in request.cookies.items() %}
+                <li>{{name}} = "{{value}}"</li>
+                {% endfor %}
+            </ul>
+        </fieldset>
+    {% endif %} -->
 </body>
 </html>
